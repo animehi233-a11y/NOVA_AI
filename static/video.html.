@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1020">
+  <title>NOVA AI - Video Studio</title>
+  <link rel="stylesheet" href="/static/video.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a href="/" class="logo">✦ NOVA AI</a>
+  <span class="studio-label">VIDEO STUDIO</span>
+</header>
+
+<main class="container">
+
+  <section class="hero">
+    <div class="orb">✦</div>
+    <p class="eyebrow">AI CREATIVE STUDIO</p>
+    <h1>Create amazing videos.</h1>
+    <p class="subtitle">
+      Turn your imagination into cinematic videos.
+    </p>
+  </section>
+
+  <section class="editor">
+
+    <label for="prompt">Describe your video</label>
+
+    <textarea id="prompt" maxlength="1500"
+      placeholder="Describe the video you want to create..."></textarea>
+
+    <div class="counter">
+      <span id="counter">0 / 1500</span>
+    </div>
+
+    <label>Video style</label>
+    <select id="style">
+      <option value="Cinematic">Cinematic</option>
+      <option value="Anime">Anime</option>
+      <option value="Realistic">Realistic</option>
+      <option value="Fantasy">Fantasy</option>
+      <option value="3D Animation">3D Animation</option>
+    </select>
+
+    <label>Aspect ratio</label>
+    <div class="choices" id="ratio">
+      <button type="button" class="choice selected" data-value="9:16">
+        9:16 Portrait
+      </button>
+      <button type="button" class="choice" data-value="16:9">
+        16:9 Landscape
+      </button>
+    </div>
+
+    <label>Video duration</label>
+    <div class="choices" id="duration">
+      <button type="button" class="choice" data-value="4">4 sec</button>
+      <button type="button" class="choice selected" data-value="8">8 sec</button>
+    </div>
+
+    <button id="generate" class="generate">
+      ✦ Generate Video
+    </button>
+
+    <p class="notice">
+      Preview mode: video generation is not connected yet.
+      No paid API requests will be made.
+    </p>
+
+  </section>
+
+  <section class="result">
+    <h2>Your video</h2>
+    <div class="preview" id="preview">
+      <div class="preview-icon">▶</div>
+      <p>Your video preview will appear here.</p>
+    </div>
+    <p id="status" class="status">Waiting for your prompt...</p>
+  </section>
+
+</main>
+
+<script src="/static/video.js"></script>
+</body>
+</html>
