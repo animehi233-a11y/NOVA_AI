@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -19,11 +20,20 @@
       <p class="eyebrow">YOUR AI CREATIVE PARTNER</p>
       <h1>What can I help you with?</h1>
       <p class="sub">Ask a question, plan an idea, or start creating.</p>
+
       <div class="suggestions">
         <button class="suggestion" data-prompt="Explain how artificial intelligence works in simple words.">✨ Explain AI simply</button>
         <button class="suggestion" data-prompt="Give me 5 creative anime story ideas.">🎬 Anime story ideas</button>
         <button class="suggestion" data-prompt="Help me plan a short video for YouTube.">📱 Plan a short video</button>
       </div>
+
+      <!-- NOVA AI VIDEO STUDIO BUTTON -->
+      <div class="suggestions">
+        <a class="suggestion" href="/static/video.html">
+          🎥 Open NOVA AI Video Studio
+        </a>
+      </div>
+
     </section>
 
     <section class="chat" id="chat" aria-live="polite"></section>
@@ -32,8 +42,10 @@
       <textarea id="message" rows="1" maxlength="3000" placeholder="Message NOVA AI..." aria-label="Message NOVA AI"></textarea>
       <button class="send" id="send" type="submit" aria-label="Send message">➤</button>
     </form>
+
     <p class="disclaimer">NOVA AI can make mistakes. Check important information.</p>
   </main>
+
   <script src="/static/app.js"></script>
 </body>
 </html>
