@@ -1,51 +1,345 @@
 
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b1020">
-  <title>NOVA AI</title>
-  <link rel="stylesheet" href="/static/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOVA AI Video Creator</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1020;color:#fff;font-family:Arial,sans-serif}
+header{padding:20px;border-bottom:1px solid #303750;display:flex;justify-content:space-between}
+.logo{font-size:22px;font-weight:bold}
+.logo span{color:#a78bfa}
+main{max-width:700px;margin:auto;padding:22px 16px}
+h1{text-align:center;font-size:30px;margin-bottom:8px}
+.sub{text-align:center;color:#aab4ce;font-size:14px}
+.panel{background:#151d34;border:1px solid #303750;border-radius:18px;padding:18px;margin-top:22px}
+label{display:block;font-weight:bold;margin:16px 0 9px}
+textarea,select{width:100%;background:#0b1020;color:white;border:1px solid #414b68;border-radius:10px;padding:13px;font-size:15px}
+textarea{height:120px;resize:vertical}
+button,.download{display:block;width:100%;padding:15px;border:0;border-radius:11px;color:white;font-size:15px;font-weight:bold;text-align:center;text-decoration:none;margin-top:15px;cursor:pointer}
+.generate{background:linear-gradient(100deg,#9333ea,#4f46e5)}
+.download{background:#0879e8}
+button:disabled{opacity:.5}
+canvas{display:block;width:100%;height:auto;background:#111;border-radius:12px;margin-top:16px}
+video{width:100%;margin-top:16px;border-radius:12px;background:#000}
+.status{text-align:center;color:#b9a6ff;font-size:13px;margin-top:14px}
+.note{font-size:12px;color:#aab4ce;line-height:1.6;text-align:center;margin-top:18px}
+.hidden{display:none}
+</style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand"><span class="brand-mark">✦</span> NOVA AI</div>
-    <span class="status"><i></i> AI assistant</span>
-  </header>
+<header>
+  <div class="logo"><span>✦</span> NOVA AI</div>
+  <div>VIDEO STUDIO</div>
+</header>
 
-  <main class="app-shell">
-    <section class="welcome" id="welcome">
-      <div class="orb">✦</div>
-      <p class="eyebrow">YOUR AI CREATIVE PARTNER</p>
-      <h1>What can I help you with?</h1>
-      <p class="sub">Ask a question, plan an idea, or start creating.</p>
+<main>
+  <h1>AI Video Creator</h1>
+  <p class="sub">Turn your ideas into animated videos</p>
 
-      <div class="suggestions">
-        <button class="suggestion" data-prompt="Explain how artificial intelligence works in simple words.">✨ Explain AI simply</button>
-        <button class="suggestion" data-prompt="Give me 5 creative anime story ideas.">🎬 Anime story ideas</button>
-        <button class="suggestion" data-prompt="Help me plan a short video for YouTube.">📱 Plan a short video</button>
-      </div>
+  <section class="panel">
+    <label for="prompt">Describe your video</label>
+    <textarea id="prompt" maxlength="500"
+      placeholder="Example: A boy walks through a magical forest. A glowing blue stone appears."></textarea>
 
-      <!-- NOVA AI VIDEO STUDIO BUTTON -->
-      <div class="suggestions">
-        <a class="suggestion" href="/static/video.html">
-          🎥 Open NOVA AI Video Studio
-        </a>
-      </div>
+    <label for="ratio">Video size</label>
+    <select id="ratio">
+      <option value="portrait">9:16 - YouTube Shorts / Reels</option>
+      <option value="landscape">16:9 - YouTube</option>
+    </select>
 
-    </section>
+    <label for="duration">Video duration</label>
+    <select id="duration">
+      <option value="8">8 seconds</option>
+      <option value="12">12 seconds</option>
+      <option value="15">15 seconds</option>
+    </select>
 
-    <section class="chat" id="chat" aria-live="polite"></section>
+    <button class="generate" id="generate">✦ Create Video</button>
+    <p class="status" id="status">Ready to create your video.</p>
 
-    <form class="composer" id="chat-form">
-      <textarea id="message" rows="1" maxlength="3000" placeholder="Message NOVA AI..." aria-label="Message NOVA AI"></textarea>
-      <button class="send" id="send" type="submit" aria-label="Send message">➤</button>
-    </form>
+    <canvas id="canvas" width="720" height="1280"></canvas>
 
-    <p class="disclaimer">NOVA AI can make mistakes. Check important information.</p>
-  </main>
+    <video id="preview" controls class="hidden"></video>
+    <a id="download" class="download hidden" download="NOVA-AI-Video.webm">
+      Download Video
+    </a>
+  </section>
 
-  <script src="/static/app.js"></script>
+  <p class="note">
+    Free browser-based animated video maker. No API key or billing required.
+    Exports WebM video. This version creates animated text scenes, not realistic
+    AI-generated footage. No audio is included.
+  </p>
+</main>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const promptBox = document.getElementById("prompt");
+const ratioBox = document.getElementById("ratio");
+const durationBox = document.getElementById("duration");
+const button = document.getElementById("generate");
+const statusText = document.getElementById("status");
+const preview = document.getElementById("preview");
+const download = document.getElementById("download");
+
+let scenes = [];
+let particles = [];
+let animationFrame;
+let startTime = 0;
+let totalDuration = 8;
+
+function makeScenes(text) {
+  let lines = text.split(/[\n.!?]+/)
+    .map(x => x.trim())
+    .filter(Boolean);
+
+  if (!lines.length) return [];
+  return lines.slice(0, 5);
+}
+
+function setupCanvas() {
+  if (ratioBox.value === "portrait") {
+    canvas.width = 720;
+    canvas.height = 1280;
+  } else {
+    canvas.width = 1280;
+    canvas.height = 720;
+  }
+
+  particles = Array.from({length:35}, () => ({
+    x:Math.random()*canvas.width,
+    y:Math.random()*canvas.height,
+    size:Math.random()*4+1,
+    speed:Math.random()*0.7+0.2
+  }));
+}
+
+function drawWrappedText(text, x, y, maxWidth, lineHeight) {
+  const words = text.split(" ");
+  let line = "";
+  let lines = [];
+
+  for (const word of words) {
+    const test = line ? line + " " + word : word;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+
+  lines = lines.slice(0, 6);
+  const offset = (lines.length - 1) * lineHeight / 2;
+
+  lines.forEach((item, index) => {
+    ctx.fillText(item, x, y - offset + index * lineHeight);
+  });
+}
+
+function drawFrame(time, duration) {
+  const w = canvas.width;
+  const h = canvas.height;
+
+  const gradient = ctx.createLinearGradient(
+    0, 0, w, h
+  );
+
+  const hue = (time * 16) % 360;
+  gradient.addColorStop(0, `hsl(${hue},65%,15%)`);
+  gradient.addColorStop(1, `hsl(${(hue+100)%360},65%,9%)`);
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0,0,w,h);
+
+  particles.forEach(p => {
+    p.y -= p.speed;
+    if(p.y < 0) p.y = h;
+
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    ctx.fillStyle = "rgba(190,170,255,0.5)";
+    ctx.fill();
+  });
+
+  const sceneDuration = duration / scenes.length;
+  const sceneIndex = Math.min(
+    scenes.length-1,
+    Math.floor(time/sceneDuration)
+  );
+
+  const localTime = (time % sceneDuration) / sceneDuration;
+  const fade = Math.min(1,localTime*5,(1-localTime)*5);
+
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  ctx.fillStyle = "#bba3ff";
+  ctx.font = "bold 22px Arial";
+  ctx.fillText("✦ NOVA AI",w/2,h*0.16);
+
+  ctx.fillStyle = "#ffffff";
+  ctx.shadowColor = "#9b5cff";
+  ctx.shadowBlur = 25;
+
+  const fontSize = w < h ? 43 : 48;
+  ctx.font = `bold ${fontSize}px Arial`;
+
+  ctx.globalAlpha = Math.max(0.2,fade);
+
+  drawWrappedText(
+    scenes[sceneIndex],
+    w/2,
+    h/2 + Math.sin(time*2)*12,
+    w*0.78,
+    fontSize*1.35
+  );
+
+  ctx.globalAlpha = 1;
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = "#c4b5fd";
+  ctx.font = "18px Arial";
+  ctx.fillText(
+    `SCENE ${sceneIndex+1} / ${scenes.length}`,
+    w/2,h*0.85
+  );
+
+  ctx.fillStyle = "#ffffff30";
+  ctx.fillRect(w*0.12,h*0.91,w*0.76,5);
+
+  ctx.fillStyle = "#a78bfa";
+  ctx.fillRect(w*0.12,h*0.91,w*0.76*(time/duration),5);
+}
+
+function drawIdle() {
+  setupCanvas();
+  ctx.fillStyle = "#111827";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = "#c4b5fd";
+  ctx.textAlign = "center";
+  ctx.font = "bold 38px Arial";
+  ctx.fillText("NOVA AI",canvas.width/2,canvas.height/2-20);
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "22px Arial";
+  ctx.fillText("Your video starts here",canvas.width/2,canvas.height/2+30);
+}
+
+function chooseMime() {
+  const types = [
+    "video/webm;codecs=vp9",
+    "video/webm;codecs=vp8",
+    "video/webm"
+  ];
+  return types.find(type => MediaRecorder.isTypeSupported(type));
+}
+
+button.addEventListener("click", () => {
+  const text = promptBox.value.trim();
+
+  if (!text) {
+    statusText.textContent = "Please enter a video prompt.";
+    return;
+  }
+
+  if (!window.MediaRecorder || !canvas.captureStream) {
+    statusText.textContent =
+      "Video recording is not supported in this browser. Try an updated browser.";
+    return;
+  }
+
+  const mimeType = chooseMime();
+
+  if (!mimeType) {
+    statusText.textContent = "This browser cannot export WebM video.";
+    return;
+  }
+
+  scenes = makeScenes(text);
+  totalDuration = Number(durationBox.value);
+  setupCanvas();
+
+  button.disabled = true;
+  download.classList.add("hidden");
+  preview.classList.add("hidden");
+
+  statusText.textContent = "Creating your animated video...";
+
+  const stream = canvas.captureStream(30);
+  const chunks = [];
+
+  let recorder;
+
+  try {
+    recorder = new MediaRecorder(stream,{mimeType});
+  } catch(error) {
+    stream.getTracks().forEach(track => track.stop());
+    button.disabled = false;
+    statusText.textContent = "Could not start video recording.";
+    return;
+  }
+
+  recorder.ondataavailable = event => {
+    if(event.data && event.data.size > 0) {
+      chunks.push(event.data);
+    }
+  };
+
+  recorder.onerror = () => {
+    stream.getTracks().forEach(track => track.stop());
+    button.disabled = false;
+    statusText.textContent = "Video recording failed. Please try again.";
+  };
+
+  recorder.onstop = () => {
+    cancelAnimationFrame(animationFrame);
+    stream.getTracks().forEach(track => track.stop());
+
+    const blob = new Blob(chunks,{type:mimeType});
+    const url = URL.createObjectURL(blob);
+
+    preview.src = url;
+    preview.classList.remove("hidden");
+
+    download.href = url;
+    download.classList.remove("hidden");
+
+    statusText.textContent =
+      "Your video is ready! Preview or download it.";
+
+    button.disabled = false;
+  };
+
+  startTime = performance.now();
+
+  function animate(now) {
+    const elapsed = (now-startTime)/1000;
+    const time = Math.min(elapsed,totalDuration);
+
+    drawFrame(time,totalDuration);
+
+    statusText.textContent =
+      "Creating video: " +
+      Math.min(100,Math.floor(time/totalDuration*100)) + "%";
+
+    if(elapsed < totalDuration) {
+      animationFrame = requestAnimationFrame(animate);
+    } else if(recorder.state === "recording") {
+      recorder.stop();
+    }
+  }
+
+  drawFrame(0,totalDuration);
+  recorder.start();
+  animationFrame = requestAnimationFrame(animate);
+});
+
+drawIdle();
+</script>
 </body>
 </html>
