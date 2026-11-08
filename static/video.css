@@ -138,6 +138,7 @@ select {
 }
 
 .generate {
+  display: block;
   width: 100%;
   margin-top: 25px;
   padding: 16px;
@@ -147,6 +148,9 @@ select {
   color: white;
   font-size: 16px;
   font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .notice {
@@ -187,6 +191,26 @@ select {
   text-align: center;
   font-size: 12px;
   color: #aab4ce;
+}
+
+/* FREE AI VIDEO GENERATOR BUTTON */
+
+.bing-button {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 15px;
+  text-align: center;
+  background: #0879e8;
+  color: white;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.bing-button:hover {
+  background: #0565c5;
 }
 
 @media(max-width: 400px) {
